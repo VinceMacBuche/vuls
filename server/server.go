@@ -67,6 +67,10 @@ func (h VulsHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	if result.ReportedAt.IsZero() {
 		result.ReportedAt = time.Now()
 	}
+	for cveID, cve := range result.ScannedCves {
+		cve.CveContents = models.CveContents{}
+		result.ScannedCves[cveID] = cve
+	}
 
 	// report
 	reports := []report.ResultWriter{
