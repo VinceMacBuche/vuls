@@ -27,8 +27,14 @@ type ovalResult struct {
 type defPacks struct {
 	def ovalmodels.Definition
 
+	packageVulns []packageVuln
 	// BinaryPackageName : NotFixedYet
 	binpkgFixstat map[string]fixStat
+}
+
+type packageVuln struct {
+	name    string
+	version string
 }
 
 type fixStat struct {
@@ -41,20 +47,23 @@ type fixStat struct {
 func (e defPacks) toPackStatuses() (ps models.PackageFixStatuses) {
 	for name, stat := range e.binpkgFixstat {
 		ps = append(ps, models.PackageFixStatus{
-			Name:        name,
-			NotFixedYet: stat.notFixedYet,
-			FixedIn:     stat.fixedIn,
+			Name:         name,
+			NotFixedYet:  stat.notFixedYet,
+			FixedIn:      stat.fixedIn,
+			VersionFound: e.packageVulns[0].version,
 		})
 	}
 	return
 }
 
-func (e *ovalResult) upsert(def ovalmodels.Definition, packName string, fstat fixStat) (upserted bool) {
+func (e *ovalResult) upsert(def ovalmodels.Definition, packName packageVuln, fstat fixStat) (upserted bool) {
 	// alpine's entry is empty since Alpine secdb is not OVAL format
 	if def.DefinitionID != "" {
 		for i, entry := range e.entries {
 			if entry.def.DefinitionID == def.DefinitionID {
-				e.entries[i].binpkgFixstat[packName] = fstat
+				p := e.entries[i].packageVulns
+				e.entries[i].binpkgFixstat[packName.name] = fstat
+				e.entries[i].packageVulns = append(p, packName)
 				return true
 			}
 		}
@@ -62,8 +71,9 @@ func (e *ovalResult) upsert(def ovalmodels.Definition, packName string, fstat fi
 	e.entries = append(e.entries, defPacks{
 		def: def,
 		binpkgFixstat: map[string]fixStat{
-			packName: fstat,
+			packName.name: fstat,
 		},
+		packageVulns: []packageVuln{packName},
 	})
 
 	return false
@@ -158,14 +168,17 @@ func getDefsByPackNameViaHTTP(r *models.ScanResult) (
 							notFixedYet: notFixedYet,
 							fixedIn:     fixedIn,
 						}
-						relatedDefs.upsert(def, n, fs)
+						packageInfo := packageVuln{n, res.request.versionRelease}
+						relatedDefs.upsert(def, packageInfo, fs)
 					}
 				} else {
 					fs := fixStat{
 						notFixedYet: notFixedYet,
 						fixedIn:     fixedIn,
 					}
-					relatedDefs.upsert(def, res.request.packName, fs)
+
+					packageInfo := packageVuln{res.request.packName, res.request.versionRelease}
+					relatedDefs.upsert(def, packageInfo, fs)
 				}
 			}
 		case err := <-errChan:
@@ -261,14 +274,22 @@ func getDefsByPackNameFromOvalDB(driver db.DB, r *models.ScanResult) (relatedDef
 						fixedIn:     fixedIn,
 						srcPackName: req.packName,
 					}
-					relatedDefs.upsert(def, binName, fs)
+					packageInfo := packageVuln{
+						name:    binName,
+						version: req.versionRelease,
+					}
+					relatedDefs.upsert(def, packageInfo, fs)
 				}
 			} else {
 				fs := fixStat{
 					notFixedYet: notFixedYet,
 					fixedIn:     fixedIn,
 				}
-				relatedDefs.upsert(def, req.packName, fs)
+				packageInfo := packageVuln{
+					req.packName,
+					req.versionRelease,
+				}
+				relatedDefs.upsert(def, packageInfo, fs)
 			}
 		}
 	}

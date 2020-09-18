@@ -117,7 +117,7 @@ func TestUpsert(t *testing.T) {
 		},
 	}
 	for i, tt := range tests {
-		upserted := tt.res.upsert(tt.def, tt.packName, tt.fixStat)
+		upserted := tt.res.upsert(tt.def, packageVuln{tt.packName, ""}, tt.fixStat)
 		if tt.upserted != upserted {
 			t.Errorf("[%d]\nexpected: %t\n  actual: %t\n", i, tt.upserted, upserted)
 		}
