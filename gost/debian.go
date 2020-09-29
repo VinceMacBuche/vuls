@@ -17,6 +17,7 @@ type Debian struct {
 
 type packCves struct {
 	packName  string
+	version   string
 	isSrcPack bool
 	cves      []models.CveContent
 }
@@ -97,6 +98,7 @@ func (deb Debian) DetectUnfixed(driver db.DB, r *models.ScanResult, _ bool) (nCV
 				packName:  pack.Name,
 				isSrcPack: false,
 				cves:      cves,
+				version:   pack.Version,
 			})
 		}
 
@@ -111,6 +113,7 @@ func (deb Debian) DetectUnfixed(driver db.DB, r *models.ScanResult, _ bool) (nCV
 				packName:  pack.Name,
 				isSrcPack: true,
 				cves:      cves,
+				version:   pack.Version,
 			})
 		}
 	}
@@ -154,9 +157,10 @@ func (deb Debian) DetectUnfixed(driver db.DB, r *models.ScanResult, _ bool) (nCV
 
 			for _, name := range names {
 				v.AffectedPackages = v.AffectedPackages.Store(models.PackageFixStatus{
-					Name:        name,
-					FixState:    "open",
-					NotFixedYet: true,
+					Name:         name,
+					FixState:     "open",
+					NotFixedYet:  true,
+					VersionFound: p.version,
 				})
 			}
 			r.ScannedCves[cve.CveID] = v
