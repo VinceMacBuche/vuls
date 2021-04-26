@@ -380,6 +380,7 @@ func isOvalDefAffected(def ovalmodels.Definition, req request, family string, ru
 
 var centosVerPattern = regexp.MustCompile(`\.[es]l(\d+)(?:_\d+)?(?:\.centos)?`)
 var esVerPattern = regexp.MustCompile(`\.el(\d+)(?:_\d+)?`)
+var epochPattern = regexp.MustCompile(`\d+:`)
 
 func lessThan(family, newVer string, packInOVAL ovalmodels.Package) (bool, error) {
 	switch family {
@@ -416,8 +417,9 @@ func lessThan(family, newVer string, packInOVAL ovalmodels.Package) (bool, error
 
 	case config.RedHat,
 		config.CentOS:
-		vera := rpmver.NewVersion(centosVerPattern.ReplaceAllString(newVer, ".el$1"))
-		verb := rpmver.NewVersion(esVerPattern.ReplaceAllString(packInOVAL.Version, ".el$1"))
+		vera := rpmver.NewVersion(epochPattern.ReplaceAllString(centosVerPattern.ReplaceAllString(newVer, ".el$1"), ""))
+		verb := rpmver.NewVersion(epochPattern.ReplaceAllString(esVerPattern.ReplaceAllString(packInOVAL.Version, ".el$1"), ""))
+		vera.epoch = verb.epoch
 		return vera.LessThan(verb), nil
 
 	default:
