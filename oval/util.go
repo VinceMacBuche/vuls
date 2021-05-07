@@ -419,7 +419,6 @@ func lessThan(family, newVer string, packInOVAL ovalmodels.Package) (bool, error
 		config.CentOS:
 		vera := rpmver.NewVersion(epochPattern.ReplaceAllString(centosVerPattern.ReplaceAllString(newVer, ".el$1"), ""))
 		verb := rpmver.NewVersion(epochPattern.ReplaceAllString(esVerPattern.ReplaceAllString(packInOVAL.Version, ".el$1"), ""))
-		vera.epoch = verb.epoch
 		return vera.LessThan(verb), nil
 
 	default:
