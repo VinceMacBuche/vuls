@@ -115,7 +115,8 @@ func (deb Debian) detectCVEsWithFixState(r *models.ScanResult, fixed bool) ([]st
 			}
 		}
 	} else {
-		for _, p := range r.SrcPackages {
+		for _, pack := range r.Packages {
+			p := models.SrcPackage{Name: pack.Name, Version: pack.Version, BinaryNames: []string{pack.Name}}
 			n := strings.NewReplacer("linux-signed", "linux", "linux-latest", "linux", "-amd64", "", "-arm64", "", "-i386", "").Replace(p.Name)
 
 			if deb.isKernelSourcePackage(n) {
