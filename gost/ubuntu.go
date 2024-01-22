@@ -252,8 +252,9 @@ func (ubu Ubuntu) detect(cves map[string]gostmodels.UbuntuCVE, fixed bool, srcPk
 								continue
 							}
 							c.fixStatuses = append(c.fixStatuses, models.PackageFixStatus{
-								Name:    bn,
-								FixedIn: patchedVersion,
+								Name:         bn,
+								FixedIn:      patchedVersion,
+								VersionFound: srcPkg.Version,
 							})
 						}
 					}
@@ -265,9 +266,10 @@ func (ubu Ubuntu) detect(cves map[string]gostmodels.UbuntuCVE, fixed bool, srcPk
 					continue
 				}
 				c.fixStatuses = append(c.fixStatuses, models.PackageFixStatus{
-					Name:        bn,
-					FixState:    "open",
-					NotFixedYet: true,
+					Name:         bn,
+					FixState:     "open",
+					NotFixedYet:  true,
+					VersionFound: srcPkg.Version,
 				})
 			}
 		}

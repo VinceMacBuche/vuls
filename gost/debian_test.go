@@ -194,8 +194,9 @@ func TestDebian_detect(t *testing.T) {
 				{
 					cveContent: models.CveContent{Type: models.DebianSecurityTracker, CveID: "CVE-0000-0001", SourceLink: "https://security-tracker.debian.org/tracker/CVE-0000-0001"},
 					fixStatuses: models.PackageFixStatuses{{
-						Name:    "pkg",
-						FixedIn: "0.0.0-2",
+						Name:         "pkg",
+						FixedIn:      "0.0.0-2",
+						VersionFound: "0.0.0-1",
 					}},
 				},
 			},
@@ -239,17 +240,19 @@ func TestDebian_detect(t *testing.T) {
 				{
 					cveContent: models.CveContent{Type: models.DebianSecurityTracker, CveID: "CVE-0000-0000", SourceLink: "https://security-tracker.debian.org/tracker/CVE-0000-0000"},
 					fixStatuses: models.PackageFixStatuses{{
-						Name:        "pkg",
-						FixState:    "open",
-						NotFixedYet: true,
+						Name:         "pkg",
+						FixState:     "open",
+						NotFixedYet:  true,
+						VersionFound: "0.0.0-1",
 					}},
 				},
 				{
 					cveContent: models.CveContent{Type: models.DebianSecurityTracker, CveID: "CVE-0000-0001", SourceLink: "https://security-tracker.debian.org/tracker/CVE-0000-0001"},
 					fixStatuses: models.PackageFixStatuses{{
-						Name:        "pkg",
-						FixState:    "undetermined",
-						NotFixedYet: true,
+						Name:         "pkg",
+						FixState:     "undetermined",
+						NotFixedYet:  true,
+						VersionFound: "0.0.0-1",
 					}},
 				},
 			},
@@ -296,8 +299,9 @@ func TestDebian_detect(t *testing.T) {
 				{
 					cveContent: models.CveContent{Type: models.DebianSecurityTracker, CveID: "CVE-0000-0001", SourceLink: "https://security-tracker.debian.org/tracker/CVE-0000-0001"},
 					fixStatuses: models.PackageFixStatuses{{
-						Name:    "linux-image-5.10.0-20-amd64",
-						FixedIn: "0.0.0-2",
+						Name:         "linux-image-5.10.0-20-amd64",
+						FixedIn:      "0.0.0-2",
+						VersionFound: "0.0.0+1",
 					}},
 				},
 			},
