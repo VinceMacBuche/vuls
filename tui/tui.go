@@ -905,7 +905,6 @@ type dataForTmpl struct {
 	Mitigation       string
 	PatchURLs        []string
 	Confidences      models.Confidences
-	Cwes             []models.CweDictEntry
 	Alerts           []models.Alert
 	Links            []string
 	References       []models.Reference
@@ -986,16 +985,6 @@ func detailLines() (string, error) {
 		table.AddRow(cols...)
 	}
 
-	uniqCweIDs := vinfo.CveContents.UniqCweIDs(r.Family)
-	cwes := []models.CweDictEntry{}
-	for _, cweID := range uniqCweIDs {
-		if strings.HasPrefix(cweID.Value, "CWE-") {
-			if dict, ok := r.CweDict[strings.TrimPrefix(cweID.Value, "CWE-")]; ok {
-				cwes = append(cwes, dict)
-			}
-		}
-	}
-
 	data := dataForTmpl{
 		CveID:       vinfo.CveID,
 		Cvsses:      fmt.Sprintf("%s\n", table),
@@ -1003,7 +992,6 @@ func detailLines() (string, error) {
 		Mitigation:  strings.Join(mitigations, "\n"),
 		PatchURLs:   vinfo.CveContents.PatchURLs(),
 		Confidences: vinfo.Confidences,
-		Cwes:        cwes,
 		Links:       util.Distinct(links),
 		References:  refs,
 	}

@@ -10,7 +10,6 @@ import (
 
 	"github.com/future-architect/vuls/config"
 	"github.com/future-architect/vuls/constant"
-	"github.com/future-architect/vuls/cwe"
 	"github.com/future-architect/vuls/logging"
 )
 
@@ -54,7 +53,6 @@ type ScanResult struct {
 	GitHubManifests   DependencyGraphManifests `json:"gitHubManifests,omitempty"`
 	LibraryScanners   LibraryScanners          `json:"libraries,omitempty"`
 	WindowsKB         *WindowsKB               `json:"windowsKB,omitempty"`
-	CweDict           CweDict                  `json:"cweDict,omitempty"`
 	Optional          map[string]interface{}   `json:",omitempty"`
 	Config            struct {
 		Scan   config.Config `json:"scan"`
@@ -441,85 +439,8 @@ func (r *ScanResult) SortForJSONOutput() {
 	}
 }
 
-// CweDict is a dictionary for CWE
-type CweDict map[string]CweDictEntry
-
 // AttentionCWE has OWASP TOP10, CWE TOP25, CWE/SANS TOP25 rank and url
 type AttentionCWE struct {
 	Rank string
 	URL  string
-}
-
-// Get the name, url, top10URL for the specified cweID, lang
-func (c CweDict) Get(cweID, lang string) (name, url string, owasp, cwe25, sans map[string]AttentionCWE) {
-	cweNum := strings.TrimPrefix(cweID, "CWE-")
-	dict, ok := c[cweNum]
-	if !ok {
-		return
-	}
-
-	owasp, cwe25, sans = fillAttentionCwe(dict, lang)
-	switch lang {
-	case "ja":
-		if dict, ok := cwe.CweDictJa[cweNum]; ok {
-			name = dict.Name
-			url = fmt.Sprintf("http://jvndb.jvn.jp/ja/cwe/%s.html", cweID)
-		} else {
-			if dict, ok := cwe.CweDictEn[cweNum]; ok {
-				name = dict.Name
-			}
-			url = fmt.Sprintf("https://cwe.mitre.org/data/definitions/%s.html", cweID)
-		}
-	default:
-		url = fmt.Sprintf("https://cwe.mitre.org/data/definitions/%s.html", cweID)
-		if dict, ok := cwe.CweDictEn[cweNum]; ok {
-			name = dict.Name
-		}
-	}
-	return
-}
-
-func fillAttentionCwe(dict CweDictEntry, lang string) (owasp, cwe25, sans map[string]AttentionCWE) {
-	owasp, cwe25, sans = map[string]AttentionCWE{}, map[string]AttentionCWE{}, map[string]AttentionCWE{}
-	switch lang {
-	case "ja":
-		for year, rank := range dict.OwaspTopTens {
-			owasp[year] = AttentionCWE{
-				Rank: rank,
-				URL:  cwe.OwaspTopTenURLsJa[year][rank],
-			}
-		}
-	default:
-		for year, rank := range dict.OwaspTopTens {
-			owasp[year] = AttentionCWE{
-				Rank: rank,
-				URL:  cwe.OwaspTopTenURLsEn[year][rank],
-			}
-		}
-	}
-
-	for year, rank := range dict.CweTopTwentyfives {
-		cwe25[year] = AttentionCWE{
-			Rank: rank,
-			URL:  cwe.CweTopTwentyfiveURLs[year],
-		}
-	}
-
-	for year, rank := range dict.SansTopTwentyfives {
-		sans[year] = AttentionCWE{
-			Rank: rank,
-			URL:  cwe.SansTopTwentyfiveURLs[year],
-		}
-	}
-
-	return
-}
-
-// CweDictEntry is a entry of CWE
-type CweDictEntry struct {
-	En                 *cwe.Cwe          `json:"en,omitempty"`
-	Ja                 *cwe.Cwe          `json:"ja,omitempty"`
-	OwaspTopTens       map[string]string `json:"owaspTopTens"`
-	CweTopTwentyfives  map[string]string `json:"cweTopTwentyfives"`
-	SansTopTwentyfives map[string]string `json:"sansTopTwentyfives"`
 }
