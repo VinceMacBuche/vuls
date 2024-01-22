@@ -439,68 +439,6 @@ No CVE-IDs are found in updatable packages.
 			data = append(data, []string{"Confidence", confidence.String()})
 		}
 
-		cweURLs, top10URLs, cweTop25URLs, sansTop25URLs := []string{}, map[string][]string{}, map[string][]string{}, map[string][]string{}
-		for _, v := range vuln.CveContents.UniqCweIDs(r.Family) {
-			name, url, owasp, cwe25, sans := r.CweDict.Get(v.Value, r.Lang)
-
-			ds := [][]string{}
-			for year, info := range owasp {
-				ds = append(ds, []string{"CWE", fmt.Sprintf("[OWASP(%s) Top%s] %s: %s (%s)", year, info.Rank, v.Value, name, v.Type)})
-				top10URLs[year] = append(top10URLs[year], info.URL)
-			}
-			slices.SortFunc(ds, func(a, b []string) int {
-				if a[1] < b[1] {
-					return -1
-				}
-				if a[1] > b[1] {
-					return +1
-				}
-				return 0
-			})
-			data = append(data, ds...)
-
-			ds = [][]string{}
-			for year, info := range cwe25 {
-				ds = append(ds, []string{"CWE", fmt.Sprintf("[CWE(%s) Top%s] %s: %s (%s)", year, info.Rank, v.Value, name, v.Type)})
-				cweTop25URLs[year] = append(cweTop25URLs[year], info.URL)
-			}
-			slices.SortFunc(ds, func(a, b []string) int {
-				if a[1] < b[1] {
-					return -1
-				}
-				if a[1] > b[1] {
-					return +1
-				}
-				return 0
-			})
-			data = append(data, ds...)
-
-			ds = [][]string{}
-			for year, info := range sans {
-				ds = append(ds, []string{"CWE", fmt.Sprintf("[CWE/SANS(%s) Top%s]  %s: %s (%s)", year, info.Rank, v.Value, name, v.Type)})
-				sansTop25URLs[year] = append(sansTop25URLs[year], info.URL)
-			}
-			slices.SortFunc(ds, func(a, b []string) int {
-				if a[1] < b[1] {
-					return -1
-				}
-				if a[1] > b[1] {
-					return +1
-				}
-				return 0
-			})
-			data = append(data, ds...)
-
-			if len(owasp) == 0 && len(cwe25) == 0 && len(sans) == 0 {
-				data = append(data, []string{"CWE", fmt.Sprintf("%s: %s (%s)", v.Value, name, v.Type)})
-			}
-			cweURLs = append(cweURLs, url)
-		}
-
-		for _, url := range cweURLs {
-			data = append(data, []string{"CWE", url})
-		}
-
 		m := map[string]struct{}{}
 		for _, exploit := range vuln.Exploits {
 			if _, ok := m[exploit.URL]; ok {
@@ -509,53 +447,6 @@ No CVE-IDs are found in updatable packages.
 			data = append(data, []string{string(exploit.ExploitType), exploit.URL})
 			m[exploit.URL] = struct{}{}
 		}
-
-		for year, urls := range top10URLs {
-			ds := [][]string{}
-			for _, url := range urls {
-				ds = append(ds, []string{fmt.Sprintf("OWASP(%s) Top10", year), url})
-			}
-			slices.SortFunc(ds, func(a, b []string) int {
-				if a[0] < b[0] {
-					return -1
-				}
-				if a[0] > b[0] {
-					return +1
-				}
-				return 0
-			})
-			data = append(data, ds...)
-		}
-
-		ds := [][]string{}
-		for year, urls := range cweTop25URLs {
-			ds = append(ds, []string{fmt.Sprintf("CWE(%s) Top25", year), urls[0]})
-		}
-		slices.SortFunc(ds, func(a, b []string) int {
-			if a[0] < b[0] {
-				return -1
-			}
-			if a[0] > b[0] {
-				return +1
-			}
-			return 0
-		})
-		data = append(data, ds...)
-
-		ds = [][]string{}
-		for year, urls := range sansTop25URLs {
-			ds = append(ds, []string{fmt.Sprintf("SANS/CWE(%s) Top25", year), urls[0]})
-		}
-		slices.SortFunc(ds, func(a, b []string) int {
-			if a[0] < b[0] {
-				return -1
-			}
-			if a[0] > b[0] {
-				return +1
-			}
-			return 0
-		})
-		data = append(data, ds...)
 
 		for _, alert := range vuln.AlertDict.CISA {
 			data = append(data, []string{"CISA Alert", alert.URL})

@@ -105,8 +105,6 @@ func (h VulsHandler) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 		http.Error(w, err.Error(), http.StatusServiceUnavailable)
 	}
 
-	detector.FillCweDict(&r)
-
 	// set ReportedAt to current time when it's set to the epoch, ensures that ReportedAt will be set
 	// properly for scans sent to vuls when running in server mode
 	if r.ReportedAt.IsZero() {

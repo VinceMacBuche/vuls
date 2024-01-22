@@ -213,7 +213,7 @@ func (w SlackWriter) toSlackAttachments(r models.ScanResult) (attaches []slack.A
 		a := slack.Attachment{
 			Title:      vinfo.CveIDDiffFormat(),
 			TitleLink:  "https://nvd.nist.gov/vuln/detail/" + vinfo.CveID,
-			Text:       w.attachmentText(vinfo, r.CweDict, r.Packages),
+			Text:       w.attachmentText(vinfo, r.Packages),
 			MarkdownIn: []string{"text", "pretext"},
 			Fields: []slack.AttachmentField{
 				{
@@ -249,7 +249,7 @@ func cvssColor(cvssScore float64) string {
 	}
 }
 
-func (w SlackWriter) attachmentText(vinfo models.VulnInfo, cweDict map[string]models.CweDictEntry, packs models.Packages) string {
+func (w SlackWriter) attachmentText(vinfo models.VulnInfo, packs models.Packages) string {
 	maxCvss := vinfo.MaxCvssScore()
 	vectors := []string{}
 
@@ -312,7 +312,7 @@ func (w SlackWriter) attachmentText(vinfo models.VulnInfo, cweDict map[string]mo
 		mitigation = fmt.Sprintf("\nMitigation:\n<%s|%s>", m.URL, m.CveContentType)
 	}
 
-	return fmt.Sprintf("*%4.1f (%s)* %s %s\n%s\n```\n%s\n```%s\n%s\n",
+	return fmt.Sprintf("*%4.1f (%s)* %s %s\n%s\n```\n%s\n```%s\n",
 		maxCvss.Value.Score,
 		severity,
 		nwvec,
@@ -320,29 +320,7 @@ func (w SlackWriter) attachmentText(vinfo models.VulnInfo, cweDict map[string]mo
 		strings.Join(vectors, "\n"),
 		vinfo.Summaries(w.lang, w.osFamily)[0].Value,
 		mitigation,
-		w.cweIDs(vinfo, w.osFamily, cweDict),
 	)
-}
-
-func (w SlackWriter) cweIDs(vinfo models.VulnInfo, osFamily string, cweDict models.CweDict) string {
-	links := []string{}
-	for _, c := range vinfo.CveContents.UniqCweIDs(osFamily) {
-		name, url, owasp, cwe25, sans := cweDict.Get(c.Value, w.lang)
-		line := fmt.Sprintf("<%s|%s>: %s", url, c.Value, name)
-		for year, info := range owasp {
-			links = append(links, fmt.Sprintf("<%s|[OWASP(%s) Top %s]> %s", info.URL, year, info.Rank, line))
-		}
-		for year, info := range cwe25 {
-			links = append(links, fmt.Sprintf("<%s|[CWE(%s) Top %s]> %s", info.URL, year, info.Rank, line))
-		}
-		for year, info := range sans {
-			links = append(links, fmt.Sprintf("<%s|[CWE/SANS(%s) Top %s]> %s", info.URL, year, info.Rank, line))
-		}
-		if len(owasp) == 0 && len(cwe25) == 0 && len(sans) == 0 {
-			links = append(links, line)
-		}
-	}
-	return strings.Join(links, "\n")
 }
 
 // See testcase
