@@ -160,8 +160,9 @@ func Test_detect(t *testing.T) {
 				{
 					cveContent: models.CveContent{Type: models.UbuntuAPI, CveID: "CVE-0000-0001", SourceLink: "https://ubuntu.com/security/CVE-0000-0001", References: []models.Reference{}},
 					fixStatuses: models.PackageFixStatuses{{
-						Name:    "pkg",
-						FixedIn: "0.0.0-2",
+						Name:         "pkg",
+						FixedIn:      "0.0.0-2",
+						VersionFound: "0.0.0-1",
 					}},
 				},
 			},
@@ -188,9 +189,10 @@ func Test_detect(t *testing.T) {
 				{
 					cveContent: models.CveContent{Type: models.UbuntuAPI, CveID: "CVE-0000-0000", SourceLink: "https://ubuntu.com/security/CVE-0000-0000", References: []models.Reference{}},
 					fixStatuses: models.PackageFixStatuses{{
-						Name:        "pkg",
-						FixState:    "open",
-						NotFixedYet: true,
+						Name:         "pkg",
+						FixState:     "open",
+						NotFixedYet:  true,
+						VersionFound: "0.0.0-1",
 					}},
 				},
 			},
@@ -226,8 +228,9 @@ func Test_detect(t *testing.T) {
 				{
 					cveContent: models.CveContent{Type: models.UbuntuAPI, CveID: "CVE-0000-0001", SourceLink: "https://ubuntu.com/security/CVE-0000-0001", References: []models.Reference{}},
 					fixStatuses: models.PackageFixStatuses{{
-						Name:    "linux-image-generic",
-						FixedIn: "0.0.0-2",
+						Name:         "linux-image-generic",
+						FixedIn:      "0.0.0-2",
+						VersionFound: "0.0.0-1",
 					}},
 				},
 			},
@@ -263,8 +266,9 @@ func Test_detect(t *testing.T) {
 				{
 					cveContent: models.CveContent{Type: models.UbuntuAPI, CveID: "CVE-0000-0001", SourceLink: "https://ubuntu.com/security/CVE-0000-0001", References: []models.Reference{}},
 					fixStatuses: models.PackageFixStatuses{{
-						Name:    "linux-image-generic",
-						FixedIn: "0.0.0.2",
+						Name:         "linux-image-generic",
+						FixedIn:      "0.0.0.2",
+						VersionFound: "0.0.0.1",
 					}},
 				},
 			},

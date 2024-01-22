@@ -42,18 +42,20 @@ type defPacks struct {
 }
 
 type fixStat struct {
-	notFixedYet bool
-	fixedIn     string
-	isSrcPack   bool
-	srcPackName string
+	notFixedYet  bool
+	fixedIn      string
+	isSrcPack    bool
+	srcPackName  string
+	versionFound string
 }
 
 func (e defPacks) toPackStatuses() (ps models.PackageFixStatuses) {
 	for name, stat := range e.binpkgFixstat {
 		ps = append(ps, models.PackageFixStatus{
-			Name:        name,
-			NotFixedYet: stat.notFixedYet,
-			FixedIn:     stat.fixedIn,
+			Name:         name,
+			NotFixedYet:  stat.notFixedYet,
+			FixedIn:      stat.fixedIn,
+			VersionFound: stat.versionFound,
 		})
 	}
 	return
@@ -209,17 +211,19 @@ func getDefsByPackNameViaHTTP(r *models.ScanResult, url string) (relatedDefs ova
 				if res.request.isSrcPack {
 					for _, n := range res.request.binaryPackNames {
 						fs := fixStat{
-							srcPackName: res.request.packName,
-							isSrcPack:   true,
-							notFixedYet: notFixedYet,
-							fixedIn:     fixedIn,
+							srcPackName:  res.request.packName,
+							isSrcPack:    true,
+							notFixedYet:  notFixedYet,
+							fixedIn:      fixedIn,
+							versionFound: res.request.versionRelease,
 						}
 						relatedDefs.upsert(def, n, fs)
 					}
 				} else {
 					fs := fixStat{
-						notFixedYet: notFixedYet,
-						fixedIn:     fixedIn,
+						notFixedYet:  notFixedYet,
+						fixedIn:      fixedIn,
+						versionFound: res.request.versionRelease,
 					}
 					relatedDefs.upsert(def, res.request.packName, fs)
 				}

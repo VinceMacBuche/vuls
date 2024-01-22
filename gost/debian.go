@@ -215,9 +215,10 @@ func (deb Debian) detect(cves map[string]gostmodels.DebianCVE, srcPkg models.Src
 							continue
 						}
 						c.fixStatuses = append(c.fixStatuses, models.PackageFixStatus{
-							Name:        bn,
-							FixState:    r.Status,
-							NotFixedYet: true,
+							Name:         bn,
+							FixState:     r.Status,
+							NotFixedYet:  true,
+							VersionFound: srcPkg.Version,
 						})
 					}
 				case "resolved":
@@ -240,8 +241,9 @@ func (deb Debian) detect(cves map[string]gostmodels.DebianCVE, srcPkg models.Src
 								continue
 							}
 							c.fixStatuses = append(c.fixStatuses, models.PackageFixStatus{
-								Name:    bn,
-								FixedIn: patchedVersion,
+								Name:         bn,
+								FixedIn:      patchedVersion,
+								VersionFound: srcPkg.Version,
 							})
 						}
 					}
