@@ -36,6 +36,7 @@ func (ms Microsoft) DetectCVEs(r *models.ScanResult, _ bool) (nCVEs int, err err
 		applied = r.WindowsKB.Applied
 		unapplied = r.WindowsKB.Unapplied
 	}
+	supersedMap := make(map[string][]string)
 	if ms.driver == nil {
 		u, err := util.URLPathJoin(ms.baseURL, "microsoft", "kbs")
 		if err != nil {
@@ -70,6 +71,17 @@ func (ms Microsoft) DetectCVEs(r *models.ScanResult, _ bool) (nCVEs int, err err
 		applied = r.Applied
 		unapplied = r.Unapplied
 	} else {
+
+		for _, unap := range unapplied {
+			var superSed []string
+			superSed = nil
+			_, superSed, err = ms.driver.GetExpandKB(nil, []string{unap})
+			for _, supers := range superSed {
+				supersedMap[supers] = append(supersedMap[supers], unap)
+			}
+
+		}
+		logging.Log.Infof("cve Id %+v", supersedMap)
 		applied, unapplied, err = ms.driver.GetExpandKB(applied, unapplied)
 		if err != nil {
 			return 0, xerrors.Errorf("Failed to detect CVEs. err: %w", err)
@@ -234,7 +246,9 @@ func (ms Microsoft) DetectCVEs(r *models.ScanResult, _ bool) (nCVEs int, err err
 
 		cveCont, mitigations := ms.ConvertToModel(&cve)
 		uniqKB := map[string]struct{}{}
+		kbFound := []string{}
 		var stats models.PackageFixStatuses
+
 		for _, p := range cve.Products {
 			for _, kb := range p.KBs {
 				if _, err := strconv.Atoi(kb.Article); err != nil {
@@ -248,6 +262,7 @@ func (ms Microsoft) DetectCVEs(r *models.ScanResult, _ bool) (nCVEs int, err err
 						if kb.FixedBuild == "" {
 							s.FixState = "unknown"
 						}
+
 						stats = append(stats, s)
 					default:
 						stats = append(stats, models.PackageFixStatus{
@@ -255,6 +270,7 @@ func (ms Microsoft) DetectCVEs(r *models.ScanResult, _ bool) (nCVEs int, err err
 							FixState: "unknown",
 							FixedIn:  kb.FixedBuild,
 						})
+
 					}
 				} else {
 
@@ -264,6 +280,7 @@ func (ms Microsoft) DetectCVEs(r *models.ScanResult, _ bool) (nCVEs int, err err
 						FixedIn:  kb.Article,
 					})
 					uniqKB[fmt.Sprintf("KB%s", kb.Article)] = struct{}{}
+					kbFound = append(kbFound, supersedMap[kb.Article]...)
 				}
 			}
 		}
@@ -301,6 +318,7 @@ func (ms Microsoft) DetectCVEs(r *models.ScanResult, _ bool) (nCVEs int, err err
 			Mitigations:       mitigations,
 			AffectedPackages:  stats,
 			WindowsKBFixedIns: maps.Keys(uniqKB),
+			WindowsKBFound:    kbFound,
 		}
 	}
 	return nCVEs, nil

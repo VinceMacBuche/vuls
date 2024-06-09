@@ -274,6 +274,7 @@ type VulnInfo struct {
 	WindowsKBFixedIns    []string             `json:"windowsKBFixedIns,omitempty"`
 	VulnType             string               `json:"vulnType,omitempty"`
 	DiffStatus           DiffStatus           `json:"diffStatus,omitempty"`
+	WindowsKBFound       []string             `json:"windowsKBFound,omitempty"`
 }
 
 // Alert has CERT alert information
