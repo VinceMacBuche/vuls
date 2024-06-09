@@ -257,6 +257,12 @@ func (ms Microsoft) DetectCVEs(r *models.ScanResult, _ bool) (nCVEs int, err err
 						})
 					}
 				} else {
+
+					stats = append(stats, models.PackageFixStatus{
+						Name:     p.Name,
+						FixState: "fixed",
+						FixedIn:  kb.Article,
+					})
 					uniqKB[fmt.Sprintf("KB%s", kb.Article)] = struct{}{}
 				}
 			}
