@@ -8,9 +8,11 @@ import (
 	"os"
 	"path/filepath"
 
-	"github.com/aquasecurity/trivy/pkg/utils"
+	trivyFlag "github.com/aquasecurity/trivy/pkg/flag"
+	"github.com/aquasecurity/trivy/pkg/utils/fsutils"
 	"github.com/google/subcommands"
 	"github.com/k0kubun/pp"
+	"golang.org/x/xerrors"
 
 	"github.com/future-architect/vuls/config"
 	"github.com/future-architect/vuls/detector"
@@ -94,6 +96,8 @@ func (*ReportCmd) Usage() string {
 		[-pipe]
 		[-http="http://vuls-report-server"]
 		[-trivy-cachedb-dir=/path/to/dir]
+                [-trivy-java-db-repository="OCI-repository-for-trivy-java-db"]
+                [-trivy-skip-java-db-update]
 
 		[RFC3339 datetime format under results dir]
 `
@@ -174,7 +178,11 @@ func (p *ReportCmd) SetFlags(f *flag.FlagSet) {
 	f.BoolVar(&config.Conf.Pipe, "pipe", false, "Use args passed via PIPE")
 
 	f.StringVar(&config.Conf.TrivyCacheDBDir, "trivy-cachedb-dir",
-		utils.DefaultCacheDir(), "/path/to/dir")
+		fsutils.CacheDir(), "/path/to/dir")
+	f.StringVar(&config.Conf.TrivyJavaDBRepository, "trivy-java-db-repository",
+		trivyFlag.JavaDBRepositoryFlag.Default, "Trivy Java DB Repository")
+	f.BoolVar(&config.Conf.TrivySkipJavaDBUpdate, "trivy-skip-java-db-update",
+		false, "Skip Trivy Java DB Update")
 }
 
 // Execute execute
@@ -342,8 +350,11 @@ func (p *ReportCmd) Execute(_ context.Context, f *flag.FlagSet, _ ...interface{}
 			AWSConf:           config.Conf.AWS,
 		}
 		if err := w.Validate(); err != nil {
-			logging.Log.Errorf("Check if there is a bucket beforehand: %s, err: %+v", config.Conf.AWS.S3Bucket, err)
-			return subcommands.ExitUsageError
+			if !xerrors.Is(err, reporter.ErrBucketExistCheck) {
+				logging.Log.Errorf("Check if there is a bucket beforehand: %s, err: %+v", config.Conf.AWS.S3Bucket, err)
+				return subcommands.ExitUsageError
+			}
+			logging.Log.Warnf("bucket: %s existence cannot be checked because s3:ListBucket or s3:ListAllMyBuckets is not allowed", config.Conf.AWS.S3Bucket)
 		}
 		reports = append(reports, w)
 	}

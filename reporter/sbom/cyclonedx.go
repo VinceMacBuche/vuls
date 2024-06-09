@@ -36,11 +36,14 @@ func GenerateCycloneDX(format cdx.BOMFileFormat, r models.ScanResult) ([]byte, e
 func cdxMetadata(result models.ScanResult) *cdx.Metadata {
 	metadata := cdx.Metadata{
 		Timestamp: result.ReportedAt.Format(time.RFC3339),
-		Tools: &[]cdx.Tool{
-			{
-				Vendor:  "future-architect",
-				Name:    "vuls",
-				Version: fmt.Sprintf("%s-%s", result.ReportedVersion, result.ReportedRevision),
+		Tools: &cdx.ToolsChoice{
+			Components: &[]cdx.Component{
+				{
+					Type:    cdx.ComponentTypeApplication,
+					Author:  "future-architect",
+					Name:    "vuls",
+					Version: fmt.Sprintf("%s-%s", result.ReportedVersion, result.ReportedRevision),
+				},
 			},
 		},
 		Component: &cdx.Component{
@@ -249,14 +252,14 @@ func libpkgToCdxComponents(libscanner models.LibraryScanner, libpkgToPURL map[st
 			Properties: &[]cdx.Property{
 				{
 					Name:  "future-architect:vuls:Type",
-					Value: libscanner.Type,
+					Value: string(libscanner.Type),
 				},
 			},
 		},
 	}
 
 	for _, lib := range libscanner.Libs {
-		purl := packageurl.NewPackageURL(libscanner.Type, "", lib.Name, lib.Version, packageurl.Qualifiers{{Key: "file_path", Value: libscanner.LockfilePath}}, "").ToString()
+		purl := packageurl.NewPackageURL(string(libscanner.Type), "", lib.Name, lib.Version, packageurl.Qualifiers{{Key: "file_path", Value: libscanner.LockfilePath}}, "").ToString()
 		components = append(components, cdx.Component{
 			BOMRef:     purl,
 			Type:       cdx.ComponentTypeLibrary,

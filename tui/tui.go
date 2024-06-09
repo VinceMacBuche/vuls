@@ -67,7 +67,7 @@ func RunTui(results models.ScanResults) subcommands.ExitStatus {
 func keybindings(g *gocui.Gui) (err error) {
 	errs := []error{}
 
-	// Move beetween views
+	// Move between views
 	errs = append(errs, g.SetKeybinding("side", gocui.KeyTab, gocui.ModNone, nextView))
 	//  errs = append(errs, g.SetKeybinding("side", gocui.KeyCtrlH, gocui.ModNone, previousView))
 	//  errs = append(errs, g.SetKeybinding("side", gocui.KeyCtrlL, gocui.ModNone, nextView))
@@ -944,10 +944,13 @@ func detailLines() (string, error) {
 			refsMap[ref.Link] = ref
 		}
 	}
-	if conts, found := vinfo.CveContents[models.Trivy]; found {
-		for _, cont := range conts {
-			for _, ref := range cont.References {
-				refsMap[ref.Link] = ref
+
+	for _, ctype := range models.GetCveContentTypes(string(models.Trivy)) {
+		if conts, found := vinfo.CveContents[ctype]; found {
+			for _, cont := range conts {
+				for _, ref := range cont.References {
+					refsMap[ref.Link] = ref
+				}
 			}
 		}
 	}

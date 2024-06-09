@@ -371,6 +371,14 @@ func TestEOL_IsStandardSupportEnded(t *testing.T) {
 			stdEnded: false,
 			extEnded: false,
 		},
+		{
+			name:     "Ubuntu 24.04 supported",
+			fields:   fields{family: Ubuntu, release: "24.04"},
+			now:      time.Date(2029, 6, 30, 23, 59, 59, 0, time.UTC),
+			found:    true,
+			stdEnded: false,
+			extEnded: false,
+		},
 		//Debian
 		{
 			name:     "Debian 8 supported",
@@ -538,6 +546,14 @@ func TestEOL_IsStandardSupportEnded(t *testing.T) {
 			name:     "freebsd 13 supported",
 			fields:   fields{family: FreeBSD, release: "13"},
 			now:      time.Date(2021, 7, 2, 23, 59, 59, 0, time.UTC),
+			stdEnded: false,
+			extEnded: false,
+			found:    true,
+		},
+		{
+			name:     "freebsd 14 supported",
+			fields:   fields{family: FreeBSD, release: "14"},
+			now:      time.Date(2028, 11, 21, 23, 59, 59, 0, time.UTC),
 			stdEnded: false,
 			extEnded: false,
 			found:    true,
@@ -804,6 +820,10 @@ func Test_getAmazonLinuxVersion(t *testing.T) {
 		},
 		{
 			release: "2023",
+			want:    "2023",
+		},
+		{
+			release: "2023.3.20240312",
 			want:    "2023",
 		},
 		{

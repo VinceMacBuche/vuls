@@ -45,7 +45,7 @@ func Detect(rs []models.ScanResult, dir string) ([]models.ScanResult, error) {
 			r.ScannedCves = models.VulnInfos{}
 		}
 
-		if err := DetectLibsCves(&r, config.Conf.TrivyCacheDBDir, config.Conf.NoProgress); err != nil {
+		if err := DetectLibsCves(&r, config.Conf.TrivyOpts, config.Conf.LogOpts, config.Conf.NoProgress); err != nil {
 			return nil, xerrors.Errorf("Failed to fill with Library dependency: %w", err)
 		}
 
@@ -467,7 +467,7 @@ func FillCvesWithNvdJvnFortinet(r *models.ScanResult, cnf config.GoCveDictConf, 
 				}
 				for _, con := range nvds {
 					if !con.Empty() {
-						vinfo.CveContents[con.Type] = []models.CveContent{con}
+						vinfo.CveContents[con.Type] = append(vinfo.CveContents[con.Type], con)
 					}
 				}
 				for _, con := range append(jvns, fortinets...) {
