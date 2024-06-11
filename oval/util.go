@@ -44,7 +44,7 @@ type defPacks struct {
 
 type fixStat struct {
 	notFixedYet  bool
-	fixState    string
+	fixState     string
 	fixedIn      string
 	isSrcPack    bool
 	srcPackName  string
@@ -56,7 +56,7 @@ func (e defPacks) toPackStatuses() (ps models.PackageFixStatuses) {
 		ps = append(ps, models.PackageFixStatus{
 			Name:         name,
 			NotFixedYet:  stat.notFixedYet,
-			FixState:    stat.fixState,
+			FixState:     stat.fixState,
 			FixedIn:      stat.fixedIn,
 			VersionFound: stat.versionFound,
 		})

@@ -74,8 +74,7 @@ func (ms Microsoft) DetectCVEs(r *models.ScanResult, _ bool) (nCVEs int, err err
 
 		for _, unap := range unapplied {
 			var superSed []string
-			superSed = nil
-			_, superSed, err = ms.driver.GetExpandKB(nil, []string{unap})
+			_, superSed, _ = ms.driver.GetExpandKB(nil, []string{unap})
 			for _, supers := range superSed {
 				supersedMap[supers] = append(supersedMap[supers], unap)
 			}
